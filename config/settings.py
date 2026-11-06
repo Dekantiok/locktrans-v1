@@ -221,6 +221,12 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 DEMO_MODE = os.environ.get('DEMO_MODE', 'False') == 'True'
 DEMO_OTP_CODE = os.environ.get('DEMO_OTP_CODE', '123456')
 DEMO_ALLOW_PROD = os.environ.get('DEMO_ALLOW_PROD', 'False') == 'True'
+# Simulated vs real payments inside Demo mode. True (default) routes
+# funding/payouts through the internal simulated checkout: no PayPal keys
+# needed. False keeps the OTP stub but uses the real PayPal sandbox, so
+# judges with PayPal access exercise live checkout, capture, and payouts
+# (PayPal sandbox accounts required; PAYPAL_* must be configured).
+DEMO_SIMULATE_PAYMENTS = os.environ.get('DEMO_SIMULATE_PAYMENTS', 'True') == 'True'
 
 if not DEBUG and DEMO_MODE and not DEMO_ALLOW_PROD:
     raise RuntimeError(

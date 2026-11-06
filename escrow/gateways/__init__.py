@@ -5,6 +5,7 @@ from .paypal import PayPalGateway
 
 
 def get_payment_gateway():
-    if getattr(settings, 'DEMO_MODE', False):
+    if getattr(settings, 'DEMO_MODE', False) and getattr(
+            settings, 'DEMO_SIMULATE_PAYMENTS', True):
         return DemoGateway()
     return PayPalGateway()

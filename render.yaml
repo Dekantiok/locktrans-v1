@@ -47,8 +47,13 @@ services:
       - key: MODEL_API_KEY
         sync: false
       # Demo mode for judges (isolated demo deployment only).
+      # OTP delivery is stubbed; payments run REAL PayPal sandbox here
+      # (DEMO_SIMULATE_PAYMENTS=False) so judges with PayPal access
+      # exercise live checkout, capture, and payouts.
       - key: DEMO_MODE
         value: True
+      - key: DEMO_SIMULATE_PAYMENTS
+        value: "False"
       - key: DEMO_OTP_CODE
         value: "123456"
       - key: DEMO_ALLOW_PROD

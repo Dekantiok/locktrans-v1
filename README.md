@@ -102,9 +102,13 @@ BASETEN_BASE_URL=https://inference.baseten.co/v1
 BASETEN_MODEL=meta-models/muse-spark-open-1026
 MODEL_API_KEY=your-meta-model-api-key
 
-# Demo switches. Leave every TERMII_* and PAYPAL_* line blank or dummy.
+# Demo switches. Leave every TERMII_* line blank or dummy.
+# DEMO_SIMULATE_PAYMENTS=True (default) needs no PayPal account at all.
+# Set it to False (with PAYPAL_* sandbox keys) for real PayPal checkout,
+# capture, and payouts while OTPs stay stubbed to 123456.
 DEMO_MODE=True
 DEMO_OTP_CODE=123456
+DEMO_SIMULATE_PAYMENTS=True
 ```
 
 Notes:
@@ -112,7 +116,7 @@ Notes:
 - `BASETEN_API_KEY` powers the AI chat. Without it the site still loads and the manual forms still work, but the assistant replies that it is temporarily unavailable.
 - `MODEL_API_KEY` powers voice notes only. Without it, typing works everywhere and voice asks you to type instead.
 - WhatsApp is optional for local judging. It needs a Meta WhatsApp app plus a public HTTPS tunnel (see Deployment). Skip it locally unless you are specifically scoring WhatsApp.
-- Seller payouts go to a PayPal email saved on the vault; no bank resolution is needed. Demo mode skips PayPal entirely.
+- Seller payouts go to a PayPal email saved on the vault; no bank resolution is needed. With `DEMO_SIMULATE_PAYMENTS=True` (default) PayPal is skipped entirely; set it to `False` plus sandbox `PAYPAL_*` keys and the same Demo flow runs against real PayPal sandbox (approve with a sandbox buyer account, payouts land in sandbox).
 
 ### What is simulated, and what is not
 
@@ -121,7 +125,7 @@ Notes:
 | OTP email delivery. Use code `123456` anywhere a verification code is asked. Wrong codes still fail. | OTP verification logic, attempt limits, expiry, and identity binding |
 | Funding. The payment link opens an internal simulated checkout page; one click runs the same backend confirmation a verified webhook would. | Amount and currency checks, funding state change, seller notification |
 | Seller payout. Release returns a fake successful transfer such as `DEMO-TRF-...` and writes a real payout record. | Vault requirement, inspection rules, dispute freeze, release confirmation |
-| Nothing else | AI tools and confirmations, join and resume, dispatch and receipt, bank detail saving, disputes, dashboard, admin |
+| Nothing else | AI tools and confirmations, join and resume, dispatch and receipt, payout email saving, disputes, dashboard, admin |
 
 ### Judge script (about 5 minutes, two people or two browsers)
 

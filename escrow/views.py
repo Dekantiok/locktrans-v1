@@ -820,7 +820,8 @@ __all__ = [
 def demo_pay_page(request, code):
     """Simulated checkout, demo mode only. Confirming here runs the exact
     same backend funding confirmation a verified PayPal webhook would."""
-    if not getattr(settings, 'DEMO_MODE', False):
+    if not getattr(settings, 'DEMO_MODE', False) or not getattr(
+            settings, 'DEMO_SIMULATE_PAYMENTS', True):
         raise Http404()
     contract = get_object_or_404(EscrowContract, code=code)
     confirmed = False

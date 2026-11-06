@@ -112,3 +112,19 @@ class DemoGuardTest(TestCase):
         # two settings that compose it.
         from django.conf import settings
         self.assertFalse(settings.DEMO_MODE)
+
+
+@override_settings(DEMO_MODE=True, DEMO_OTP_CODE='123456', DEMO_SIMULATE_PAYMENTS=False)
+class DemoRealPayPalTest(TestCase):
+    def test_real_gateway_when_payments_not_simulated(self):
+        self.assertIsInstance(get_payment_gateway(), PayPalGateway)
+
+    def test_demo_checkout_404_when_payments_not_simulated(self):
+        make_contract(code='LKTRdemo6')
+        response = self.client.get('/demo/pay/LKTRdemo6/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_demo_otp_still_accepted(self):
+        with patch('escrow.services.send_otp_via_termii', return_value=True):
+            self.assertIsNotNone(issue_otp('judge@x.com', 'reauth'))
+        self.assertTrue(consume_otp('judge@x.com', '123456', 'reauth').ok)
