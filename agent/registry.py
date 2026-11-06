@@ -106,7 +106,7 @@ DRAFT_FIELDS = (
 def tool_get_platform_information(actor, **kwargs):
     del kwargs
     return {'ok': True, 'data': {
-        'name': 'LockTrans',
+        'name': 'Locktrans',
         'how_it_works': [
             'Describe the deal: item, amount, and the other party’s email.',
             'Both sides verify their email with a one-time code.',
@@ -637,7 +637,7 @@ def _str(description):
 
 TOOLS = [
     _schema('get_platform_information',
-            'Explain what LockTrans is and how escrow works here.',
+            'Explain what Locktrans is and how escrow works here.',
             {}, []),
     _schema('get_fee_quote',
             'Quote the service fee and totals for an amount.',

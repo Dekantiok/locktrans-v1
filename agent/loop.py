@@ -24,7 +24,7 @@ from agent.registry import (
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are LockTrans's escrow assistant. You help users create and \
+SYSTEM_PROMPT = """You are Locktrans's escrow assistant. You help users create and \
 track escrows safely.
 
 Style: reply in 1-2 short sentences, at most one question per message. \

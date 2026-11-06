@@ -93,6 +93,6 @@ class CrossInterfaceTest(TestCase):
              patch('whatsapp.flow.run_turn') as mock_turn:
             mock_turn.side_effect = lambda c, t, base_url='', session_key='': (
                 f"actor={c.owner_email!r} session={session_key}")
-            reply = handle_text_message('2348000000999', 'What is LockTrans?')
+            reply = handle_text_message('2348000000999', 'What is Locktrans?')
         self.assertIn('actor=None', reply)
         self.assertIn('whatsapp:2348000000999', reply)

@@ -29,17 +29,17 @@ def send_counterparty_invitation(contract, base_url=''):
         return False
     join_path = reverse('join_escrow_page')
     join_link = f"{(base_url or '').rstrip('/')}{join_path}?code={contract.code}"
-    subject = f"You have a LockTrans escrow to review ({contract.code})"
+    subject = f"You have a Locktrans escrow to review ({contract.code})"
     body = (
         f"Hello,\n\n"
-        f"{contract.creator_email} started a LockTrans escrow with you:\n\n"
+        f"{contract.creator_email} started a Locktrans escrow with you:\n\n"
         f"  {contract.title}, {contract.amount} {contract.currency}\n"
         f"  Escrow code: {contract.code}\n\n"
         f"Review the terms and accept or reject them here:\n"
         f"  {join_link}\n\n"
         f"You will verify this email address with a one-time code before "
         f"anything is shown. The code alone does not grant access.\n\n"
-        f"- LockTrans"
+        f"- Locktrans"
     )
     try:
         send_mail(subject, body, None, [contract.counterparty_email],

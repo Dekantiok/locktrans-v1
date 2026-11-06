@@ -181,7 +181,7 @@ class OtpFlowTest(TestCase):
             def fake_turn(conversation, text, base_url='', session_key=''):
                 return f"actor={conversation.owner_email!r} session={session_key}"
             mock_turn.side_effect = fake_turn
-            reply = handle_text_message('2348000000007', 'What is LockTrans?')
+            reply = handle_text_message('2348000000007', 'What is Locktrans?')
         convo = AIConversation.objects.get(
             channel='whatsapp', channel_identity='2348000000007')
         self.assertIsNone(convo.owner_email)

@@ -1,16 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}LockTrans &middot; Secure P2P Escrow{% endblock %}
+{% block title %}Locktrans &middot; Secure P2P Escrow{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 {% block content %}
 <div class="landing-wrap">
     <span class="eyebrow">Accountless escrow for social commerce</span>
     <h1 class="display-5 fw-bold hero-title">Money moves when<br>trust is <span class="hero-underline">guaranteed</span>.</h1>
-    <p class="lead mt-3 mb-4 mx-auto text-muted-custom" style="max-width:34rem;">No accounts. No wallets. Speak or type in the chat below, or use the manual path, both end in the same secure escrow.</p>
-    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center mx-auto mb-4" style="max-width:32rem;">
-        <a href="{% url 'create_contract' %}" class="btn btn-primary-custom btn-lg flex-sm-fill">Start New Contract</a>
-        <a href="{% url 'join_escrow_page' %}" class="btn btn-outline-dark-custom btn-lg flex-sm-fill">Join Escrow</a>
-    </div>
+    <p class="lead mt-3 mb-4 mx-auto text-muted-custom" style="max-width:34rem;">No accounts. No wallets. Speak or type in the chat below, or use the manual path underneath, both end in the same secure escrow.</p>
     <div class="mx-auto" style="max-width:36rem;text-align:left;">
         <div class="card-custom">
             <div class="card-body p-3 p-md-4">
@@ -29,6 +25,13 @@
                 </form>
                 <small id="chat-voice-hint" class="text-muted-custom d-block mt-1"></small>
             </div>
+        </div>
+    </div>
+    <div class="mx-auto mt-4" style="max-width:36rem;text-align:center;">
+        <p class="small text-muted-custom mb-2">Prefer forms? The manual path ends in the same secure escrow.</p>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+            <a href="{% url 'create_contract' %}" class="btn btn-outline-dark-custom btn-lg flex-sm-fill">Start New Contract</a>
+            <a href="{% url 'join_escrow_page' %}" class="btn btn-outline-dark-custom btn-lg flex-sm-fill">Join Escrow</a>
         </div>
     </div>
     <div class="mx-auto mt-5" id="how-it-works" style="max-width:56rem;text-align:left;">

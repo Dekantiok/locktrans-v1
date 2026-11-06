@@ -82,7 +82,7 @@ class PayPalGateway(PaymentGatewayBase):
             "intent": "CAPTURE",
             "purchase_units": [{
                 "reference_id": escrow_record.gateway_reference or escrow_record.code,
-                "description": f"LockTrans escrow {escrow_record.code}",
+                "description": f"Locktrans escrow {escrow_record.code}",
                 "amount": {
                     "currency_code": escrow_record.currency or 'USD',
                     "value": money_value(total),
@@ -91,7 +91,7 @@ class PayPalGateway(PaymentGatewayBase):
             "application_context": {
                 "return_url": return_url,
                 "cancel_url": return_url,
-                "brand_name": "LockTrans",
+                "brand_name": "Locktrans",
                 "user_action": "PAY_NOW",
             },
         }
@@ -237,7 +237,7 @@ class PayPalGateway(PaymentGatewayBase):
         payload = {
             "sender_batch_header": {
                 "sender_batch_id": f"locktrans-{code}-{cents}",
-                "email_subject": f"LockTrans escrow {code} payout",
+                "email_subject": f"Locktrans escrow {code} payout",
             },
             "items": [{
                 "recipient_type": "EMAIL",
@@ -246,7 +246,7 @@ class PayPalGateway(PaymentGatewayBase):
                     "currency": getattr(settlement_vault_record.contract, 'currency', 'USD') or 'USD',
                     "value": money_value(total_disbursement),
                 },
-                "note": f"LockTrans escrow {code} settlement",
+                "note": f"Locktrans escrow {code} settlement",
             }],
         }
         try:

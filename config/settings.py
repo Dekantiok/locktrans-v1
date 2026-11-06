@@ -192,7 +192,7 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- LockTrans integration settings -----------------------------------------
+# --- Locktrans integration settings -----------------------------------------
 
 # Outgoing email (counterparty invitations). Console backend in DEBUG so
 # links print to the log; configure SMTP for production delivery.
@@ -213,7 +213,7 @@ if not DEBUG and EMAIL_BACKEND.endswith('smtp.EmailBackend') and not EMAIL_HOST:
         "emails are required for counterparty onboarding."
     )
 DEFAULT_FROM_EMAIL = os.environ.get(
-    'DEFAULT_FROM_EMAIL', 'LockTrans <no-reply@locktrans.example>')
+    'DEFAULT_FROM_EMAIL', 'Locktrans <no-reply@locktrans.example>')
 
 # Demo mode for judging/testing: Termii OTP delivery is stubbed (the
 # DEMO_OTP_CODE is accepted instead) and payments run through a simulated

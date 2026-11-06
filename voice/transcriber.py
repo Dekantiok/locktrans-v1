@@ -83,7 +83,7 @@ def transcribe_wav(wav_bytes, timeout=None):
         'model': model,
         'audioEncoding': 'WAV',
         'languageBias': ['English'],
-        'keywords': ['LockTrans', 'escrow', 'PayPal', 'dollars',
+        'keywords': ['Locktrans', 'escrow', 'PayPal', 'dollars',
                      'inspection', 'dispatch', 'payout', 'refund'],
     }
     import json as _json
