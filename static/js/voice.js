@@ -282,7 +282,7 @@
     }, 10000);
   }
 
-  window.LocktransVoice = {
+  window.LocktransAIVoice = {
     supported: supported,
     recordOnce: recordOnce,
     postAudio: postAudio,

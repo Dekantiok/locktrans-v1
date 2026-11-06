@@ -38,7 +38,7 @@ from voice.transcriber import (
 logger = logging.getLogger(__name__)
 
 EMAIL_HINT = (
-    "Welcome to Locktrans. To begin, please reply with your email address "
+    "Welcome to Locktrans.AI. To begin, please reply with your email address "
     "so I can verify it's you."
 )
 CODE_SENT_TEMPLATE = (

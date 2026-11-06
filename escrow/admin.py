@@ -246,6 +246,6 @@ class AuditEventAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.site_header = 'Locktrans Operations'
-admin.site.site_title = 'Locktrans'
+admin.site.site_header = 'Locktrans.AI Operations'
+admin.site.site_title = 'Locktrans.AI'
 admin.site.index_title = 'Escrow operations'

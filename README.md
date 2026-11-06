@@ -1,4 +1,4 @@
-# Locktrans
+# Locktrans.AI
 
 Passwordless escrow for buyers and sellers. Create a deal, verify both inboxes by email OTP, fund with PayPal, then track dispatch → delivery → inspection → payout.
 
@@ -239,7 +239,7 @@ Then reload both browsers. There is no seed data to restore; the judge script ab
 | Chat says the AI assistant is temporarily unavailable | `BASETEN_API_KEY` is missing or wrong. Set it in `.env` and restart `runserver`. Manual forms still work without it. |
 | Voice says transcription is not configured, or asks you to type | `MODEL_API_KEY` is missing. Voice also needs Chrome or Edge on `http://127.0.0.1:8000` (mic access is blocked on some plain-HTTP origins) and microphone permission allowed. |
 | No email ever arrives with a code | Expected in Demo mode. Nothing is emailed; use `123456`. Outside Demo mode, check `TERMII_API_KEY`, `TERMII_EMAIL_CONFIG_ID`, and `TERMII_SEND_IN_DEBUG=True` for local delivery. |
-| Payment link opens a Locktrans page instead of PayPal | Expected in Demo mode. Click **Confirm simulated payment**. With `DEMO_MODE=False` the same link goes to real PayPal checkout. |
+| Payment link opens a Locktrans.AI page instead of PayPal | Expected in Demo mode. Click **Confirm simulated payment**. With `DEMO_MODE=False` the same link goes to real PayPal checkout. |
 | Seller payout email looks masked | Expected for the buyer view. The seller sees the full PayPal email. |
 | The other person's chat does not update | Keep the tab open and visible for about 10 seconds; webchat polls for updates. A full refresh restarts the chat by design: resume with "continue LKTR..." plus `123456`. |
 | WhatsApp bot does not reply locally | WhatsApp needs a public HTTPS webhook. Run a tunnel such as `cloudflared tunnel --url http://127.0.0.1:8000`, set the callback to `https://<tunnel-host>/webhooks/whatsapp/`, and fill in all `WHATSAPP_*` values. Not needed for the web demo. |
@@ -286,7 +286,7 @@ Copy `.env.example` → `.env`. Never commit `.env`.
 | `WHATSAPP_APP_SECRET` | prod |, | Enforces `X-Hub-Signature-256` validation |
 | `WHATSAPP_API_VERSION` |, | `v21.0` | Graph API version |
 | `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` | prod | console backend in DEBUG | SMTP for invitation mail |
-| `DEFAULT_FROM_EMAIL` |, | `Locktrans <no-reply@…>` | Invitation sender |
+| `DEFAULT_FROM_EMAIL` |, | `Locktrans.AI <no-reply@…>` | Invitation sender |
 | `GATEWAY_HTTP_TIMEOUT` |, | `15` | Seconds before PayPal/Termii/WhatsApp calls abort |
 | `OTP_ISSUE_COOLDOWN_SECONDS` |, | `60` | Min gap between OTPs to same address/purpose |
 | `LOG_OTP_TO_CONSOLE` |, | `False` | Set `True` locally to print codes to logs |
@@ -374,4 +374,4 @@ Hold the chat mic (web) or send a WhatsApp voice note → `voice/transcriber.py`
 - Agent cannot resolve disputes or bypass auth; payout release needs buyer confirmation plus verified seller bank details, and every consequential call is confirmation-gated, with prompt-injection and tool-spoofing covered by tests.
 - Keep `LOG_OTP_TO_CONSOLE=False` outside local dev.
 
-<!-- docs: Locktrans setup verified -->
+<!-- docs: Locktrans.AI setup verified -->

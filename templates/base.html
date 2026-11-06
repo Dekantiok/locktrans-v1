@@ -3,7 +3,7 @@
 <html lang="en">
 <head>    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Locktrans{% endblock %}</title>
+    <title>{% block title %}Locktrans.AI{% endblock %}</title>
     <meta name="description" content="Accountless escrow for social commerce. Hold funds until goods are received and approved.">
     <meta name="theme-color" content="#0284C7">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><polygon points=%2250,5 90,25 90,75 50,95 10,75 10,25%22 fill=%22%230284C7%22/><text y=%2265%22 x=%2250%22 text-anchor=%22middle%22 font-size=%2255%22 font-family=%22sans-serif%22 font-weight=%22900%22 fill=%22%23ffffff%22>T</text></svg>">
@@ -46,7 +46,7 @@
         main.container { flex: 1 0 auto; width: 100%; max-width: 1160px; }
         footer { flex-shrink: 0; }
 
-        /* Light blurred header (Locktrans site-header). */
+        /* Light blurred header (Locktrans.AI site-header). */
         .navbar-custom { background: rgba(250,250,248,.88); backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border); }
         .navbar-custom .navbar-brand,
         .navbar-custom .navbar-brand:hover,
@@ -135,10 +135,10 @@
         .fee-tier { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.65rem 0; border-bottom: 1px dashed var(--color-border); }
         .fee-tier:last-child { border-bottom: 0; }
         .form-dark .fee-tier { border-bottom-color: var(--color-border); }
-        /* Fee summary card (Locktrans fee-summary). */
+        /* Fee summary card (Locktrans.AI fee-summary). */
         .fee-summary { background: var(--color-primary-soft); border: 1px solid #BAE0F7; border-radius: var(--radius-md); padding: 18px 20px; }
 
-        /* Locktrans-style footer: dark grid, muted links, blue note. */
+        /* Locktrans.AI-style footer: dark grid, muted links, blue note. */
         .footer-custom { background: #131311; border-top: none; }
         .footer-custom .text-muted-custom { color: #8A857D !important; }
 
@@ -178,7 +178,7 @@
         /* Long codes, emails and amounts wrap instead of overflowing. */
         .mono-text { overflow-wrap: anywhere; }
 
-        /* Chat bubbles (Locktrans message-bubble). */
+        /* Chat bubbles (Locktrans.AI message-bubble). */
         .bubble-mine { background: var(--color-primary-soft); border: 1px solid #BAE0F7; border-bottom-right-radius: 4px; max-width: 85%; }
         .bubble-theirs { background: var(--color-white); border: 1px solid var(--color-border); border-bottom-left-radius: 4px; max-width: 85%; }
 
@@ -245,7 +245,7 @@
     {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container d-flex flex-wrap align-items-center gap-2">
-            <a class="navbar-brand fw-bold fs-4 me-auto" href="{% url 'home' %}">Locktrans</a>
+            <a class="navbar-brand fw-bold fs-4 me-auto" href="{% url 'home' %}">Locktrans.AI</a>
             <div class="d-none d-md-flex align-items-center gap-1">
                 <a href="{% url 'home' %}#how-it-works" class="nav-link-custom">How it works</a>
                 <a href="{% url 'create_contract' %}" class="nav-link-custom">Create Escrow</a>
@@ -289,7 +289,7 @@
         <div class="container py-5">
             <div class="row g-4">
                 <div class="col-12 col-md-6">
-                    <p class="fw-bold mb-1 fs-5" style="color: #fff;">Locktrans</p>
+                    <p class="fw-bold mb-1 fs-5" style="color: #fff;">Locktrans.AI</p>
                     <p class="small mb-0" style="max-width: 20rem; color: #8A857D;">Accountless escrow for social commerce. Funds stay locked until both sides confirm.</p>
                 </div>
                 <div class="col-6 col-md-3">
@@ -306,7 +306,7 @@
                 </div>
             </div>
             <div class="d-flex flex-wrap justify-content-between gap-2 pt-3 mt-4" style="border-top: 1px solid rgba(255,255,255,.08);">
-                <p class="small mb-0" style="color: #8A857D;">&copy; {% now "Y" %} Locktrans &middot; Accountless Escrow for Social Commerce</p>
+                <p class="small mb-0" style="color: #8A857D;">&copy; {% now "Y" %} Locktrans.AI &middot; Accountless Escrow for Social Commerce</p>
                 <p class="small mb-0" style="color: #7DD3FC;">Funds are held securely until both sides confirm.</p>
             </div>
         </div>

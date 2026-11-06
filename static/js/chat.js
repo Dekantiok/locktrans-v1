@@ -11,5 +11,5 @@
         }
     });
     scrollThread();
-    if (window.LocktransVoice) LocktransVoice.initChatMic();
+    if (window.LocktransAIVoice) LocktransAIVoice.initChatMic();
 })();
