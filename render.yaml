@@ -1,0 +1,62 @@
+# Render blueprint: web service + managed Postgres. Deploy via the
+# Render dashboard (New > Blueprint, point at this repo) or `render` CLI.
+# After first deploy, update DJANGO_ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
+# with the real https://<service>.onrender.com hostname.
+services:
+  - type: web
+    name: locktrans
+    runtime: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 90"
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: DJANGO_DEBUG
+        value: False
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://locktrans.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: locktrans-db
+          property: connectionString
+      - key: SECURE_SSL_REDIRECT
+        value: True
+      # PayPal sandbox (hackathon judging). Promote to live keys post-hackathon.
+      - key: PAYPAL_MODE
+        value: sandbox
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: PAYPAL_MERCHANT_EMAIL
+        sync: false
+      # AI + voice (required for the assistant; manual forms work without).
+      - key: BASETEN_API_KEY
+        sync: false
+      - key: BASETEN_BASE_URL
+        value: https://inference.baseten.co/v1
+      - key: BASETEN_MODEL
+        value: meta-models/muse-spark-open-1026
+      - key: MODEL_API_KEY
+        sync: false
+      # Demo mode for judges (isolated demo deployment only).
+      - key: DEMO_MODE
+        value: True
+      - key: DEMO_OTP_CODE
+        value: "123456"
+      - key: DEMO_ALLOW_PROD
+        value: True
+      - key: LOG_OTP_TO_CONSOLE
+        value: "False"
+
+databases:
+  - name: locktrans-db
+    databaseName: locktrans
+    user: locktrans
