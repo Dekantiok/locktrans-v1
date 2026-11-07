@@ -270,8 +270,10 @@ ASR_MODEL = os.environ.get('ASR_MODEL', 'muse-voice-transcribe-1.0')
 VOICE_MAX_BYTES = int(os.environ.get('VOICE_MAX_BYTES', str(8 * 1024 * 1024)))
 VOICE_TIMEOUT = int(os.environ.get('VOICE_TIMEOUT', '60'))
 
-# Baseten model inference (OpenAI-compatible endpoint). The model id is
-# verified against the project account; change it via the environment.
+# Model inference (any OpenAI-compatible /v1 endpoint). Modal takes
+# precedence when configured (see modal_app.py); otherwise Baseten.
+# The model id is verified against the project account; change it via
+# the environment.
 BASETEN_API_KEY = os.environ.get('BASETEN_API_KEY', '')
 BASETEN_BASE_URL = os.environ.get(
     'BASETEN_BASE_URL', 'https://inference.baseten.co/v1'
@@ -279,6 +281,12 @@ BASETEN_BASE_URL = os.environ.get(
 BASETEN_MODEL = os.environ.get(
     'BASETEN_MODEL', 'meta-models/muse-spark-open-1026'
 )
+MODAL_API_KEY = os.environ.get('MODAL_API_KEY', '')
+MODAL_BASE_URL = os.environ.get('MODAL_BASE_URL', '')
+MODAL_MODEL = os.environ.get('MODAL_MODEL', '')
+INFERENCE_API_KEY = MODAL_API_KEY or BASETEN_API_KEY
+INFERENCE_BASE_URL = MODAL_BASE_URL or BASETEN_BASE_URL
+INFERENCE_MODEL = MODAL_MODEL or BASETEN_MODEL
 
 # Bounded agent execution: max tool iterations per user message and the
 # per-request timeout for a single inference call.

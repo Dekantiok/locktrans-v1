@@ -1,4 +1,4 @@
-"""Baseten model inference over its OpenAI-compatible endpoint.
+"""Model inference over any OpenAI-compatible endpoint (Modal or Baseten).
 
 All model access goes through ``chat()``, which enforces timeouts, parses tool calls into plain
 data, and logs token usage without ever logging keys or message content.
@@ -27,14 +27,16 @@ def build_client():
     """Construct the OpenAI-compatible client, or explain why we cannot."""
     from openai import OpenAI
 
-    api_key = getattr(settings, 'BASETEN_API_KEY', '')
+    api_key = getattr(settings, 'INFERENCE_API_KEY', '') or getattr(
+        settings, 'BASETEN_API_KEY', '')
     if not api_key:
         raise BasetenConfigError(
-            "BASETEN_API_KEY is not set. The AI assistant is unavailable "
-            "until a key is configured; the manual escrow forms keep working."
+            "No inference key is set (MODAL_API_KEY or BASETEN_API_KEY). "
+            "The AI assistant is unavailable until a key is configured; "
+            "the manual escrow forms keep working."
         )
     return OpenAI(
-        base_url=getattr(
+        base_url=getattr(settings, 'INFERENCE_BASE_URL', '') or getattr(
             settings, 'BASETEN_BASE_URL', 'https://inference.baseten.co/v1'
         ),
         api_key=api_key,
@@ -59,7 +61,8 @@ def chat(messages, tools=None, timeout=None):
         settings, 'AGENT_REQUEST_TIMEOUT', 60
     )
     client = build_client()
-    model = getattr(settings, 'BASETEN_MODEL', '')
+    model = (getattr(settings, 'INFERENCE_MODEL', '')
+             or getattr(settings, 'BASETEN_MODEL', ''))
 
     kwargs = {'model': model, 'messages': messages, 'timeout': timeout}
     if tools:

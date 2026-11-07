@@ -37,8 +37,15 @@ services:
         sync: false
       - key: PAYPAL_MERCHANT_EMAIL
         sync: false
-      # AI + voice (required for the assistant; manual forms work without).
+      # AI inference: Baseten by default; set MODAL_* to route the agent
+      # loop at a Modal-hosted endpoint instead (see modal_app.py).
       - key: BASETEN_API_KEY
+        sync: false
+      - key: MODAL_API_KEY
+        sync: false
+      - key: MODAL_BASE_URL
+        sync: false
+      - key: MODAL_MODEL
         sync: false
       - key: BASETEN_BASE_URL
         value: https://inference.baseten.co/v1
