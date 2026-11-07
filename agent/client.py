@@ -43,11 +43,17 @@ def build_client():
     )
 
 
-def chat(messages, tools=None, timeout=None):
+def chat(messages, tools=None, timeout=None, affinity_key=None):
     """One inference round.
 
     Returns ``{'text': str, 'tool_calls': [...], 'usage': {...}}`` where each
     tool call is ``{'id': ..., 'name': ..., 'arguments': {...}}``.
+    ``affinity_key`` (e.g. a conversation id) is forwarded as
+    ``Modal-Routing-Affinity-Key`` so multi-turn agent loops keep landing
+    on the same warm container; other providers ignore the header.
+    ``max_tokens`` comes from settings: reasoning models spend the budget
+    on chain-of-thought first, and too small a budget returns empty
+    content with ``finish_reason == 'length'``.
     Raises BasetenError on any failure; the agent loop decides whether the
     task can continue without the model.
     """
@@ -63,11 +69,16 @@ def chat(messages, tools=None, timeout=None):
     client = build_client()
     model = (getattr(settings, 'INFERENCE_MODEL', '')
              or getattr(settings, 'BASETEN_MODEL', ''))
+    max_tokens = int(getattr(settings, 'INFERENCE_MAX_TOKENS', 16384))
 
-    kwargs = {'model': model, 'messages': messages, 'timeout': timeout}
+    kwargs = {'model': model, 'messages': messages, 'timeout': timeout,
+              'max_tokens': max_tokens}
     if tools:
         kwargs['tools'] = tools
         kwargs['tool_choice'] = 'auto'
+    if affinity_key:
+        kwargs['extra_headers'] = {
+            'Modal-Routing-Affinity-Key': str(affinity_key)}
 
     try:
         response = client.chat.completions.create(**kwargs)

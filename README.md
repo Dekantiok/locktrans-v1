@@ -356,27 +356,20 @@ Bounded tool-using loop (`agent/loop.py`): user message → model → approved t
 
 ### Serve the model on Modal instead of Baseten
 
-The agent talks to any OpenAI-compatible `/v1` endpoint (`agent/client.py`), so self-hosting the model is a deploy step, not a code change. `modal_app.py` serves it with vLLM (native `tools` support, Bearer-token auth, scale-to-zero when idle):
+The agent talks to any OpenAI-compatible `/v1` endpoint (`agent/client.py`), so switching providers is a config change, not a code change. Two ways to run Muse Spark Open on Modal:
 
-```bash
-pip install modal
-modal setup  # paste MODAL_TOKEN_ID / MODAL_TOKEN_SECRET from modal.com
-modal secret create locktrans-llm \
-  MODAL_AUTH_TOKEN=<long-random-string> \
-  MODEL_ID=<huggingface-repo-id> \
-  HF_TOKEN=<only if the model is gated/private>
-modal deploy modal_app.py  # prints the https://.../v1 URL
-```
+**A. Shared endpoint (recommended).** Modal already hosts it on a managed, per-token pool — no GPUs to provision:
 
-Then point Django at it (`.env` locally, Render dashboard in prod):
+1. Create it: `modal endpoint create --shared --model meta-models/Muse-Spark-Open` (or the Endpoints tab in the dashboard; copy the URL and model name from its request examples).
+2. Mint a proxy token: `modal workspace proxy-tokens create`, then join as `wk-<id>.ws-<secret>`.
+3. Wire Django (`.env` locally, Render dashboard in prod): `MODAL_BASE_URL=https://inference.us-west.modal.direct/v1`, `MODAL_API_KEY=<joined proxy token>`, `MODAL_MODEL=<endpoint hostname from the dashboard>`.
+4. The loop sends `Modal-Routing-Affinity-Key` per conversation automatically, keeping each agent run on one warm container; reasoning output needs the generous `INFERENCE_MAX_TOKENS` budget (default 16384) so answers aren't cut off with `finish_reason == 'length'`.
 
-```bash
-MODAL_BASE_URL=https://<your-app>-v1.modal.run
-MODAL_API_KEY=<same MODAL_AUTH_TOKEN as above>
-MODAL_MODEL=<same MODEL_ID>
-```
+Note: shared-endpoint tokens bill from the first call (outside the free compute credits) — fine for a demo, watch it in production.
 
-`MODAL_*` wins when set; otherwise the app keeps using Baseten. Pick a tool-capable checkpoint and match `TOOL_CALL_PARSER` to its family (`llama3_json`, `hermes`, `mistral`) so the agent loop keeps receiving structured tool calls; keep a GPU with enough VRAM for the checkpoint (A10G suffices for 8B-class models). First request after idle pays a cold-start while the container boots and weights load.
+**B. Self-host with vLLM.** `modal_app.py` in this repo runs the open weights behind the same OpenAI shape with Bearer-token auth and scale-to-zero; see its header for the exact `modal secret create` / `modal deploy` steps. Useful if you need a private pool or a different checkpoint; heavier and slower to cold-start than A.
+
+`MODAL_*` wins when set; otherwise the app keeps using Baseten.
 
 ## Voice notes
 

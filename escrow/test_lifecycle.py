@@ -106,7 +106,7 @@ class ReleaseToolTest(TestCase):
         def script(rounds):
             calls = list(rounds)
 
-            def fake_chat(messages, tools=None):
+            def fake_chat(messages, tools=None, **kwargs):
                 if calls:
                     return calls.pop(0)
                 return {'text': 'Done.', 'tool_calls': [], 'usage': {}}
@@ -203,7 +203,7 @@ class RecentUpdatesTest(TestCase):
         convo.save(update_fields=['owner_email'])
         seen = []
 
-        def fake_chat(messages, tools=None):
+        def fake_chat(messages, tools=None, **kwargs):
             seen.extend(messages)
             return {'text': 'Nothing.', 'tool_calls': [], 'usage': {}}
 

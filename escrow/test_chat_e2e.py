@@ -27,7 +27,7 @@ class ChatE2ETest(TestCase):
     def setUp(self):
         self.queue = []
 
-        def fake_chat(messages, tools=None):
+        def fake_chat(messages, tools=None, **kwargs):
             if self.queue:
                 return self.queue.pop(0)
             return text_reply('Done.')

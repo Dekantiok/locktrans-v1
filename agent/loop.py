@@ -552,7 +552,13 @@ def run_turn(conversation, user_text, base_url='', session_key=''):
     try:
         for _ in range(max_iterations):
             try:
-                result = chat(model_messages, tools=TOOLS)
+                # One affinity key per conversation keeps every turn of an
+                # agent loop on the same warm container (Modal KV-cache).
+                result = chat(
+                    model_messages, tools=TOOLS,
+                    affinity_key=str(
+                        conversation.channel_identity or conversation.id),
+                )
             except BasetenError:
                 logger.exception("Agent inference failed; degrading gracefully")
                 return DEGRADED_REPLY

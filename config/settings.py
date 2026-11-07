@@ -289,9 +289,11 @@ INFERENCE_BASE_URL = MODAL_BASE_URL or BASETEN_BASE_URL
 INFERENCE_MODEL = MODAL_MODEL or BASETEN_MODEL
 
 # Bounded agent execution: max tool iterations per user message and the
-# per-request timeout for a single inference call.
+# per-request timeout for a single inference call. INFERENCE_MAX_TOKENS
+# must cover chain-of-thought plus the answer on reasoning models.
 AGENT_MAX_ITERATIONS = int(os.environ.get('AGENT_MAX_ITERATIONS', '8'))
 AGENT_REQUEST_TIMEOUT = int(os.environ.get('AGENT_REQUEST_TIMEOUT', '60'))
+INFERENCE_MAX_TOKENS = int(os.environ.get('INFERENCE_MAX_TOKENS', '16384'))
 
 # Seconds before an outbound PayPal/Termii call is abandoned. Without this a
 # slow gateway holds the user's request open indefinitely, which matters most on

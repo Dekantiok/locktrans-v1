@@ -1,10 +1,10 @@
 """Serve the chat model on Modal behind an OpenAI-compatible endpoint.
 
-The Django app talks to ANY OpenAI-compatible `/v1` endpoint (see
-``agent/client.py``), so pointing it at Modal is a config change, not a
-code change. This file is the Modal side: vLLM in-process, FastAPI
-shim exposing ``POST /v1/chat/completions`` (plus ``/v1/models`` and
-``/healthz``), Bearer-token auth, scale-to-zero when idle.
+NOTE: prefer Modal's managed Shared Endpoint for Muse Spark Open
+(per-token billing, no GPUs to provision — see README "Serve the model
+on Modal"). This file is the full self-host fallback: vLLM in-process,
+FastAPI shim exposing ``POST /v1/chat/completions`` (plus ``/v1/models``
+and ``/healthz``), Bearer-token auth, scale-to-zero when idle.
 
 Prerequisites (Modal account required):
   pip install modal

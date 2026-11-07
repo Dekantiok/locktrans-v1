@@ -24,7 +24,7 @@ from escrow.models import EscrowContract
 def scripted(*rounds):
     calls = list(rounds)
 
-    def fake_chat(messages, tools=None):
+    def fake_chat(messages, tools=None, **kwargs):
         if calls:
             return calls.pop(0)
         return {'text': 'Done.', 'tool_calls': [], 'usage': {}}

@@ -94,6 +94,38 @@ class BasetenClientTest(TestCase):
         self.assertEqual(result['usage']['prompt_tokens'], 10)
         self.assertEqual(result['usage']['completion_tokens'], 5)
 
+    @override_settings(BASETEN_API_KEY='test-key')
+    def test_reasoning_budget_is_sent(self):
+        with patch('agent.client.build_client') as mock_build:
+            mock_build.return_value.chat.completions.create.return_value = (
+                completion(text='Hi')
+            )
+            chat([{'role': 'user', 'content': 'hi'}])
+        _, kwargs = mock_build.return_value.chat.completions.create.call_args
+        self.assertGreaterEqual(kwargs.get('max_tokens'), 4096)
+
+    @override_settings(BASETEN_API_KEY='test-key')
+    def test_affinity_key_becomes_routing_header(self):
+        with patch('agent.client.build_client') as mock_build:
+            mock_build.return_value.chat.completions.create.return_value = (
+                completion(text='Hi')
+            )
+            chat([{'role': 'user', 'content': 'hi'}],
+                 affinity_key='convo-123')
+        _, kwargs = mock_build.return_value.chat.completions.create.call_args
+        self.assertEqual(kwargs.get('extra_headers'),
+                         {'Modal-Routing-Affinity-Key': 'convo-123'})
+
+    @override_settings(BASETEN_API_KEY='test-key')
+    def test_no_affinity_header_by_default(self):
+        with patch('agent.client.build_client') as mock_build:
+            mock_build.return_value.chat.completions.create.return_value = (
+                completion(text='Hi')
+            )
+            chat([{'role': 'user', 'content': 'hi'}])
+        _, kwargs = mock_build.return_value.chat.completions.create.call_args
+        self.assertNotIn('extra_headers', kwargs)
+
 
 class RegistryTest(TestCase):
     def setUp(self):
@@ -207,7 +239,7 @@ class LoopTest(TestCase):
         """Script agent.loop.chat to return `rounds` then a final reply."""
         calls = list(rounds)
 
-        def fake_chat(messages, tools=None):
+        def fake_chat(messages, tools=None, **kwargs):
             if calls:
                 return calls.pop(0)
             return {'text': 'Done.', 'tool_calls': [], 'usage': {}}
@@ -330,7 +362,7 @@ class LoopTest(TestCase):
         convo = self.make_conversation()
         seen = []
 
-        def fake_chat(messages, tools=None):
+        def fake_chat(messages, tools=None, **kwargs):
             seen.extend(messages)
             return {'text': 'Please verify in the app.', 'tool_calls': [],
                     'usage': {}}
