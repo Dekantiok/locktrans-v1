@@ -11,7 +11,7 @@ Prerequisites (Modal account required):
   modal setup                      # paste MODAL_TOKEN_ID / MODAL_TOKEN_SECRET
   modal secret create locktrans-llm \
     MODAL_AUTH_TOKEN=<pick-a-long-random-string> \
-    MODEL_ID=<huggingface-repo-id> \
+    MODEL_ID=meta-models/Muse-Spark-Open-816B-A42B-NVFP4 \
     HF_TOKEN=<only if the model is gated/private> \
     TOOL_CALL_PARSER=<see below>
 
@@ -24,7 +24,10 @@ Wire Django (local .env or Render env vars):
   MODAL_MODEL=<same MODEL_ID, echoed back; any string works>
 
 Tool calling: vLLM serves the ``tools`` parameter natively when the
-model's tokenizer ships a tool-capable chat template. TOOL_CALL_PARSER
+model's tokenizer ships a tool-capable chat template. Muse-Spark is a
+custom architecture: if its template lacks tool support or vLLM cannot
+load it, the agent loop still runs (plain replies, manual forms as
+fallback) — verify with a live turn before judging. TOOL_CALL_PARSER
 selects vLLM's parser (e.g. ``llama3_json`` for Llama-3.x, ``hermes``
 for Qwen/Hermes-style, ``mistral`` for Mistral). Leave it empty to let
 the model answer without structured tool calls and the agent loop
@@ -35,9 +38,18 @@ import os
 
 import modal
 
-MODEL_ID = os.environ.get("MODEL_ID", "meta-llama/Meta-Llama-3.1-8B-Instruct")
+# Public weights (no HF account needed unless gated):
+#   meta-models/Muse-Spark-Open-816B-A42B-NVFP4   <- default, ~4-bit, smallest
+#   meta-models/Muse-Spark-Open-816B-A42B         <- full precision, ~1.6TB
+# 816B MoE (42B active) needs serious VRAM even quantized: the NVFP4
+# build wants roughly 8xH100-80GB. That is $$$/hr on any cloud, so only
+# deploy this for short judging/demo windows and let it scale to zero.
+# For day-to-day dev, leave MODAL_* unset and use Baseten.
+MODEL_ID = os.environ.get(
+    "MODEL_ID", "meta-models/Muse-Spark-Open-816B-A42B-NVFP4")
 TOOL_CALL_PARSER = os.environ.get("TOOL_CALL_PARSER", "") or None
-GPU = os.environ.get("MODAL_GPU", "A10G")
+GPU_TYPE = os.environ.get("MODAL_GPU", "H100")
+GPU_COUNT = int(os.environ.get("MODAL_GPU_COUNT", "8"))
 HF_TOKEN = os.environ.get("HF_TOKEN", "") or None
 
 app = modal.App("locktrans-llm")
@@ -51,6 +63,10 @@ image = (
     )
     .env({"HF_HUB_OFFLINE": "0"})
 )
+
+# Persistent HF cache so redeploys / cold starts don't re-download
+# hundreds of GB of weights every time.
+weights_cache = modal.Volume.from_name("locktrans-hf-cache", create_if_missing=True)
 
 
 def _check_auth(request) -> bool:
@@ -67,10 +83,11 @@ def _check_auth(request) -> bool:
 
 @app.cls(
     image=image,
-    gpu=GPU,
+    gpu=f"{GPU_TYPE}:{GPU_COUNT}" if GPU_COUNT > 1 else GPU_TYPE,
+    volumes={"/root/.cache/huggingface": weights_cache},
     secrets=[modal.Secret.from_name("locktrans-llm")],
     scaledown_window=300,
-    timeout=600,
+    timeout=3600,
 )
 class Model:
     @modal.enter()
@@ -78,9 +95,12 @@ class Model:
         from vllm import AsyncLLMEngine
         from vllm.engine.arg_utils import AsyncEngineArgs
 
+        # Custom Meta architecture: run the repo's own modeling code.
+        # (Sandboxed in our own container; never enable this for
+        # untrusted third-party repos.)
         kwargs = dict(
             model=MODEL_ID,
-            trust_remote_code=False,
+            trust_remote_code=True,
             max_model_len=8192,
             gpu_memory_utilization=0.9,
             enable_auto_tool_choice=True,
@@ -100,7 +120,7 @@ class Model:
         self.engine = AsyncLLMEngine.from_engine_args(engine_args)
         from vllm.transformers_utils.tokenizer import get_tokenizer
 
-        self.tokenizer = get_tokenizer(MODEL_ID, trust_remote_code=False)
+        self.tokenizer = get_tokenizer(MODEL_ID, trust_remote_code=True)
 
     async def _chat(self, body: dict) -> dict:
         import time
