@@ -1,10 +1,10 @@
-"""Tests for the Baseten inference client (all network calls mocked)."""
+"""Tests for the inference client (all network calls mocked)."""
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.test import TestCase, override_settings
 
-from agent.client import BasetenAPIError, BasetenConfigError, chat
+from agent.client import InferenceAPIError, InferenceConfigError, chat
 
 
 def tool_call(call_id='call_1', name='get_fee_quote', arguments='{"amount": "50000"}'):
@@ -23,13 +23,13 @@ def completion(text='Hello', calls=None, usage=None):
     )
 
 
-class BasetenClientTest(TestCase):
-    @override_settings(BASETEN_API_KEY='')
+class InferenceClientTest(TestCase):
+    @override_settings(INFERENCE_API_KEY='')
     def test_missing_key_is_a_clear_config_error(self):
-        with self.assertRaises(BasetenConfigError):
+        with self.assertRaises(InferenceConfigError):
             chat([{'role': 'user', 'content': 'hi'}])
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_plain_reply_is_returned_as_text(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
@@ -39,7 +39,7 @@ class BasetenClientTest(TestCase):
         self.assertEqual(result['text'], 'Hello there')
         self.assertEqual(result['tool_calls'], [])
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_tool_calls_are_parsed_to_plain_data(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
@@ -54,35 +54,35 @@ class BasetenClientTest(TestCase):
         self.assertEqual(call['name'], 'get_fee_quote')
         self.assertEqual(call['arguments'], {'amount': '50000'})
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_unparseable_arguments_are_an_api_error(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
                 completion(calls=[tool_call(arguments='{not json')])
             )
-            with self.assertRaises(BasetenAPIError):
+            with self.assertRaises(InferenceAPIError):
                 chat([{'role': 'user', 'content': 'hi'}])
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_timeout_maps_to_api_error(self):
         from openai import APITimeoutError
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.side_effect = (
                 APITimeoutError(request=None)
             )
-            with self.assertRaises(BasetenAPIError):
+            with self.assertRaises(InferenceAPIError):
                 chat([{'role': 'user', 'content': 'hi'}])
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_empty_choices_are_an_api_error(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
                 SimpleNamespace(choices=[])
             )
-            with self.assertRaises(BasetenAPIError):
+            with self.assertRaises(InferenceAPIError):
                 chat([{'role': 'user', 'content': 'hi'}])
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_usage_is_logged_not_returned_raw(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
@@ -94,7 +94,7 @@ class BasetenClientTest(TestCase):
         self.assertEqual(result['usage']['prompt_tokens'], 10)
         self.assertEqual(result['usage']['completion_tokens'], 5)
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_reasoning_budget_is_sent(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
@@ -104,7 +104,7 @@ class BasetenClientTest(TestCase):
         _, kwargs = mock_build.return_value.chat.completions.create.call_args
         self.assertGreaterEqual(kwargs.get('max_tokens'), 4096)
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_affinity_key_becomes_routing_header(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
@@ -116,7 +116,7 @@ class BasetenClientTest(TestCase):
         self.assertEqual(kwargs.get('extra_headers'),
                          {'Modal-Routing-Affinity-Key': 'convo-123'})
 
-    @override_settings(BASETEN_API_KEY='test-key')
+    @override_settings(INFERENCE_API_KEY='test-key')
     def test_no_affinity_header_by_default(self):
         with patch('agent.client.build_client') as mock_build:
             mock_build.return_value.chat.completions.create.return_value = (
@@ -375,10 +375,10 @@ class LoopTest(TestCase):
             self.assertNotIn('123456', text)
 
     def test_model_outage_degrades_to_manual_path(self):
-        from agent.client import BasetenAPIError
+        from agent.client import InferenceAPIError
         from agent.loop import DEGRADED_REPLY, run_turn
         convo = self.make_conversation()
-        with patch('agent.loop.chat', side_effect=BasetenAPIError('down')):
+        with patch('agent.loop.chat', side_effect=InferenceAPIError('down')):
             self.assertEqual(run_turn(convo, 'hello'), DEGRADED_REPLY)
 
 

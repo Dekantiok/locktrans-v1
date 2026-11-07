@@ -37,20 +37,14 @@ services:
         sync: false
       - key: PAYPAL_MERCHANT_EMAIL
         sync: false
-      # AI inference: Baseten by default; set MODAL_* to route the agent
-      # loop at a Modal-hosted endpoint instead (see modal_app.py).
-      - key: BASETEN_API_KEY
+      # Chat model: any OpenAI-compatible /v1 endpoint (Modal shared
+      # endpoint or self-hosted). No code changes to switch.
+      - key: INFERENCE_API_KEY
         sync: false
-      - key: MODAL_API_KEY
+      - key: INFERENCE_BASE_URL
         sync: false
-      - key: MODAL_BASE_URL
+      - key: INFERENCE_MODEL
         sync: false
-      - key: MODAL_MODEL
-        sync: false
-      - key: BASETEN_BASE_URL
-        value: https://inference.baseten.co/v1
-      - key: BASETEN_MODEL
-        value: meta-models/muse-spark-open-1026
       - key: MODEL_API_KEY
         sync: false
       # Demo mode for judges (isolated demo deployment only).

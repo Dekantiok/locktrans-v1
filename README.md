@@ -4,7 +4,7 @@ Passwordless escrow for buyers and sellers. Create a deal, verify both inboxes b
 
 Three interfaces, one backend: the manual web forms, the website AI assistant (text + voice), and the WhatsApp AI assistant (text + voice notes) all run on the same escrow engine, the same validation, and the same money rules.
 
-Built with Django + SQLite (local) / Postgres (prod) + PayPal + Termii + Baseten or Modal (chat) + Meta Model API (voice).
+Built with Django + SQLite (local) / Postgres (prod) + PayPal + Termii + any OpenAI-compatible chat model (Modal shared endpoint by default) + Meta Model API (voice).
 
 ## How it works
 
@@ -41,13 +41,13 @@ The AI handles the whole arc conversationally: draft → confirm → code → jo
 - Gunicorn + WhiteNoise, `dj-database-url`
 - PayPal (Orders + Payouts + refunds), Termii (email OTP), SMTP/email (counterparty invites)
 - Hold-to-speak voice notes on web and WhatsApp; cancelled or sub-second taps are discarded, never transcribed
-- Baseten- or Modal-hosted chat model (OpenAI-compatible), Meta Muse Voice Transcribe (STT)
+- Any OpenAI-compatible chat model (served on Modal in this deployment), Meta Muse Voice Transcribe (STT)
 - SQLite locally, Postgres (e.g. Neon) when `DJANGO_DEBUG=False`
 - Timezone: `Africa/Lagos`
 
 ## Quickstart
 
-You need Python 3.13 or newer (the project runtime is Python 3.14), Git, and an AI inference key if you want to test the AI assistant. For the quickest evaluation, use Demo mode below. It needs no Termii or PayPal keys.
+You need Python 3.13 or newer (the project runtime is Python 3.14), Git, and an AI inference key if you want to test the AI assistant. Point `INFERENCE_*` at any OpenAI-compatible endpoint (a Modal shared endpoint or self-hosted vLLM). For the quickest evaluation, use Demo mode below. It needs no Termii or PayPal keys.
 
 ```bash
 # 1. Clone + venv
@@ -71,7 +71,7 @@ python manage.py runserver
 Open http://127.0.0.1:8000/ and check:
 
 1. The home page loads with a blue Demo mode banner when `DEMO_MODE=True`.
-2. The chat answers. If it says the AI is unavailable, no inference key is configured (`MODAL_API_KEY` or `BASETEN_API_KEY`) or the endpoint is unreachable in `.env`. Restart the server after changing `.env`.
+2. The chat answers. If it says the AI is unavailable, no inference key is configured (`INFERENCE_API_KEY`) or the endpoint is unreachable in `.env`. Restart the server after changing `.env`.
 3. The full judge script in Demo mode below completes and the escrow ends as `completed`.
 
 Useful commands:
@@ -97,9 +97,10 @@ DJANGO_SECRET_KEY=local-dev-secret-change-me
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 
 # The only keys you must supply yourself for AI and voice:
-BASETEN_API_KEY=your-baseten-key
-BASETEN_BASE_URL=https://inference.baseten.co/v1
-BASETEN_MODEL=meta-models/muse-spark-open-1026
+# Point at any OpenAI-compatible endpoint, e.g. a Modal shared endpoint:
+INFERENCE_API_KEY=your-key-or-proxy-token
+INFERENCE_BASE_URL=https://inference.us-west.modal.direct/v1
+INFERENCE_MODEL=your-endpoint-hostname-or-model-id
 MODEL_API_KEY=your-meta-model-api-key
 
 # Demo switches. Leave every TERMII_* line blank or dummy.
@@ -113,7 +114,7 @@ DEMO_SIMULATE_PAYMENTS=True
 
 Notes:
 
-- `BASETEN_API_KEY` powers the AI chat (unless `MODAL_*` is set, which takes over). Without any inference key the site still loads and the manual forms still work, but the assistant replies that it is temporarily unavailable.
+- `INFERENCE_*` points the AI chat at any OpenAI-compatible endpoint. Without them the site still loads and the manual forms still work, but the assistant replies that it is temporarily unavailable.
 - `MODEL_API_KEY` powers voice notes only. Without it, typing works everywhere and voice asks you to type instead.
 - WhatsApp is optional for local judging. It needs a Meta WhatsApp app plus a public HTTPS tunnel (see Deployment). Skip it locally unless you are specifically scoring WhatsApp.
 - Seller payouts go to a PayPal email saved on the vault; no bank resolution is needed. With `DEMO_SIMULATE_PAYMENTS=True` (default) PayPal is skipped entirely; set it to `False` plus sandbox `PAYPAL_*` keys and the same Demo flow runs against real PayPal sandbox (approve with a sandbox buyer account, payouts land in sandbox).
@@ -240,7 +241,7 @@ Then reload both browsers. There is no seed data to restore; the judge script ab
 | Symptom | Fix |
 | --- | --- |
 | `no such column: agent_aiconversation.pending_email` or any `no such column` error | Run `python manage.py migrate`, then restart the server. This is the most common fresh-checkout hiccup. |
-| Chat says the AI assistant is temporarily unavailable | No inference key set (`MODAL_API_KEY` or `BASETEN_API_KEY`) or the endpoint is unreachable. Set one in `.env` and restart `runserver`. Manual forms still work without it. |
+| Chat says the AI assistant is temporarily unavailable | No inference key set (`INFERENCE_API_KEY`) or the endpoint is unreachable. Set the three `INFERENCE_*` values in `.env` and restart `runserver`. Manual forms still work without it. |
 | Voice says transcription is not configured, or asks you to type | `MODEL_API_KEY` is missing. Voice also needs Chrome or Edge on `http://127.0.0.1:8000` (mic access is blocked on some plain-HTTP origins) and microphone permission allowed. |
 | No email ever arrives with a code | Expected in Demo mode. Nothing is emailed; use `123456`. Outside Demo mode, check `TERMII_API_KEY`, `TERMII_EMAIL_CONFIG_ID`, and `TERMII_SEND_IN_DEBUG=True` for local delivery. |
 | Payment link opens a Locktrans.AI page instead of PayPal | Expected in Demo mode. Click **Confirm simulated payment**. With `DEMO_MODE=False` the same link goes to real PayPal checkout. |
@@ -271,10 +272,7 @@ Copy `.env.example` → `.env`. Never commit `.env`.
 | `TERMII_API_KEY` | yes | `dummy_key` | Termii API key for email OTP |
 | `TERMII_EMAIL_CONFIG_ID` | yes | `default_config` | Termii email config/channel ID |
 | `TERMII_SEND_IN_DEBUG` |, | `False` | Set `True` for live local OTP delivery (costs credit) |
-| `BASETEN_API_KEY` | for AI chat |, | Chat model inference key (ignored when `MODAL_*` set) |
-| `BASETEN_BASE_URL` |, | `https://inference.baseten.co/v1` | OpenAI-compatible endpoint |
-| `BASETEN_MODEL` |, | `meta-models/muse-spark-open-1026` | Verified against project account |
-| `MODAL_API_KEY` / `MODAL_BASE_URL` / `MODAL_MODEL` | alt AI chat |, | Point the agent at a Modal-hosted endpoint instead; see below |
+| `INFERENCE_API_KEY` / `INFERENCE_BASE_URL` / `INFERENCE_MODEL` | for AI chat |, | Any OpenAI-compatible chat endpoint |
 | `AGENT_MAX_ITERATIONS` |, | `8` | Tool-call cap per chat turn. Keep `Procfile` web `timeout` above the worst case (`AGENT_REQUEST_TIMEOUT` + transcribe + PayPal) |
 | `AGENT_REQUEST_TIMEOUT` |, | `60` | Seconds per inference call |
 | `CACHE_BACKEND` / `CACHE_LOCATION` |, | locmem | Swap for Redis etc. in multi-worker deploys; sessions stay database-backed |
@@ -333,7 +331,7 @@ Admin: `/admin/` (escrow ops, OTPs, vaults, payments, payouts, refunds, webhooks
 config/            # settings, urls, wsgi/asgi
 escrow/            # models, views, forms, services, lifecycle.py, invitations.py,
                    # gateways/, notifications.py, bank_verification.py, tests
-agent/             # chat loop, Baseten client, tool registry, views
+agent/             # chat loop, inference client, tool registry, views
 whatsapp/          # Cloud API adapter, webhook, conversation flow
 voice/             # Muse transcription (ffmpeg convert + API client)
 templates/         # base.html (design system), home.html, agent/, escrow/
@@ -354,7 +352,7 @@ Bounded tool-using loop (`agent/loop.py`): user message → model → approved t
 - OTPs are consumed by the backend, never the model; codes are redacted from model context.
 - Model outages degrade to the manual forms; nothing is ever claimed from conversation alone.
 
-### Serve the model on Modal instead of Baseten
+### Serve the model on Modal
 
 The agent talks to any OpenAI-compatible `/v1` endpoint (`agent/client.py`), so switching providers is a config change, not a code change. Two ways to run Muse Spark Open on Modal:
 
@@ -362,14 +360,14 @@ The agent talks to any OpenAI-compatible `/v1` endpoint (`agent/client.py`), so 
 
 1. Create it: `modal endpoint create --shared --model meta-models/Muse-Spark-Open` (or the Endpoints tab in the dashboard; copy the URL and model name from its request examples).
 2. Mint a proxy token: `modal workspace proxy-tokens create`, then join as `wk-<id>.ws-<secret>`.
-3. Wire Django (`.env` locally, Render dashboard in prod): `MODAL_BASE_URL=https://inference.us-west.modal.direct/v1`, `MODAL_API_KEY=<joined proxy token>`, `MODAL_MODEL=<endpoint hostname from the dashboard>`.
+3. Wire Django (`.env` locally, Render dashboard in prod): `INFERENCE_BASE_URL=https://inference.us-west.modal.direct/v1`, `INFERENCE_API_KEY=<joined proxy token>`, `INFERENCE_MODEL=<endpoint hostname from the dashboard>`.
 4. The loop sends `Modal-Routing-Affinity-Key` per conversation automatically, keeping each agent run on one warm container; reasoning output needs the generous `INFERENCE_MAX_TOKENS` budget (default 16384) so answers aren't cut off with `finish_reason == 'length'`.
 
 Note: shared-endpoint tokens bill from the first call (outside the free compute credits) — fine for a demo, watch it in production.
 
 **B. Self-host with vLLM.** `modal_app.py` in this repo runs the open weights behind the same OpenAI shape with Bearer-token auth and scale-to-zero; see its header for the exact `modal secret create` / `modal deploy` steps. Useful if you need a private pool or a different checkpoint; heavier and slower to cold-start than A.
 
-`MODAL_*` wins when set; otherwise the app keeps using Baseten.
+Any OpenAI-compatible server works here — a Modal shared endpoint or your own deployment — with no code changes.
 
 ## Voice notes
 

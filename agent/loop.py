@@ -13,7 +13,7 @@ import re
 from django.conf import settings
 from django.utils import timezone
 
-from agent.client import BasetenError, chat
+from agent.client import InferenceError, chat
 from agent.models import AIConversation, ConversationMessage
 from agent.registry import (
     CONFIRMATION_TTL_SECONDS,
@@ -559,7 +559,7 @@ def run_turn(conversation, user_text, base_url='', session_key=''):
                     affinity_key=str(
                         conversation.channel_identity or conversation.id),
                 )
-            except BasetenError:
+            except InferenceError:
                 logger.exception("Agent inference failed; degrading gracefully")
                 return DEGRADED_REPLY
 

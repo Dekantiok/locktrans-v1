@@ -18,10 +18,12 @@ Prerequisites (Modal account required):
 Deploy:
   modal deploy modal_app.py        # note the https://.../v1 URL it prints
 
-Wire Django (local .env or Render env vars):
-  MODAL_BASE_URL=https://<your-modal-app>-v1.modal.run
-  MODAL_API_KEY=<same MODAL_AUTH_TOKEN as above>
-  MODAL_MODEL=<same MODEL_ID, echoed back; any string works>
+Wire Django (INFERENCE_* in .env locally, Render dashboard in prod):
+  INFERENCE_BASE_URL=https://<your-modal-app>-v1.modal.run
+  INFERENCE_API_KEY=<same MODAL_AUTH_TOKEN as above>
+  INFERENCE_MODEL=<same MODEL_ID>
+Any OpenAI-compatible server works here — a Modal shared endpoint
+or your own deployment.
 
 Tool calling: vLLM serves the ``tools`` parameter natively when the
 model's tokenizer ships a tool-capable chat template. Muse-Spark is a
@@ -44,7 +46,8 @@ import modal
 # 816B MoE (42B active) needs serious VRAM even quantized: the NVFP4
 # build wants roughly 8xH100-80GB. That is $$$/hr on any cloud, so only
 # deploy this for short judging/demo windows and let it scale to zero.
-# For day-to-day dev, leave MODAL_* unset and use Baseten.
+# For day-to-day dev without GPU spend, use a Modal shared
+# endpoint instead of deploying this file.
 MODEL_ID = os.environ.get(
     "MODEL_ID", "meta-models/Muse-Spark-Open-816B-A42B-NVFP4")
 TOOL_CALL_PARSER = os.environ.get("TOOL_CALL_PARSER", "") or None
